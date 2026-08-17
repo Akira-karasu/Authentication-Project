@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
 import { createLog } from "./logsService.js";
 import db from "../config/database.js";
+import { createVerificationToken, resendVerification } from "./verificationService.js";
 
 export const registerUser = async (userData) => {
 
@@ -57,6 +58,10 @@ export const registerUser = async (userData) => {
         [id]
     );
 
+    const token_verification = await createVerificationToken(id)
+
+    // make an email callout here for token_verification
+
     return {
         id,
         username,
@@ -68,11 +73,19 @@ export const loginUser = async (userData) => {
 
     const {
         email,
-        password,
+        password
     } = userData;
 
     const [users] = await db.execute(
-        "SELECT id, username, email, password FROM users WHERE email = ?",
+        `SELECT
+            id,
+            username,
+            email,
+            password,
+            status,
+            role
+         FROM users
+         WHERE email = ?`,
         [email]
     );
 
@@ -91,9 +104,26 @@ export const loginUser = async (userData) => {
         throw new Error("Invalid email or password");
     }
 
+    if (user.status === "unverified") {
+        throw new Error("Please verify your email first");
+    }
+
+    if (user.status === "inactive") {
+        throw new Error("Account is inactive");
+    }
+
+    if (user.status === "suspended") {
+        throw new Error("Account is suspended");
+    }
+
+    if (user.status === "banned") {
+        throw new Error("Account is banned");
+    }
+
     const token = jwt.sign(
         {
-            userId: user.id
+            userId: user.id,
+            role: user.role
         },
         process.env.JWT_SECRET,
         {
