@@ -2,13 +2,23 @@ import {
     verifyEmail, resendVerification
 } from "../services/verificationService.js";
 
+import { createLog } from "../services/logsService.js";
+
 export const verifyEmailAccount = async (req, res) => {
 
     try {
 
         const { token } = req.query;
 
-        await verifyEmail(token);
+        const user_id = await verifyEmail(token);
+
+        await createLog({
+            userId: user_id,
+            action: "VERIFIED",
+            description: "User is verified",
+            ipAddress: req.ip,
+            userAgent: req.get("user-agent")
+        })
 
         res.status(200).json({
             message: "Email verified successfully"

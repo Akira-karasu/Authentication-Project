@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { createLog } from "./logsService.js";
 import db from "../config/database.js";
 import { createVerificationToken, resendVerification } from "./verificationService.js";
+import { sendVerificationEmail } from "./emailService.js";
 
 export const registerUser = async (userData) => {
 
@@ -61,6 +62,7 @@ export const registerUser = async (userData) => {
     const token_verification = await createVerificationToken(id)
 
     // make an email callout here for token_verification
+    await sendVerificationEmail(email, token_verification)
 
     return {
         id,
@@ -135,4 +137,21 @@ export const loginUser = async (userData) => {
         id: user.id,
         token
     };
+};
+
+
+export const logoutUser = async ({
+    userId,
+    ipAddress,
+    userAgent
+}) => {
+
+    await createLog({
+        userId,
+        action: "LOGOUT",
+        description: "User logged out successfully",
+        ipAddress,
+        userAgent
+    });
+
 };

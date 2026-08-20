@@ -6,7 +6,6 @@ import {
 
 import db from "../config/database.js";
 
-
 export const createVerificationToken = async (userId) => {
 
     const token = randomBytes(32).toString("hex");
@@ -158,9 +157,9 @@ export const verifyEmail = async (token) => {
         throw new Error("Invalid verification token");
     }
 
-    const verification = tokens[0];
+    const user = tokens[0];
 
-    if (new Date() > new Date(verification.expires_at)) {
+    if (new Date() > new Date(user.expires_at)) {
         throw new Error("Verification token has expired");
     }
 
@@ -174,13 +173,13 @@ export const verifyEmail = async (token) => {
             `UPDATE users
              SET status = 'active'
              WHERE id = ?`,
-            [verification.user_id]
+            [user.user_id]
         );
 
         await connection.execute(
             `DELETE FROM verification_tokens
              WHERE id = ?`,
-            [verification.id]
+            [user.id]
         );
 
         await connection.commit();
@@ -194,4 +193,7 @@ export const verifyEmail = async (token) => {
 
         connection.release();
     }
+
+    return user.user_id
+
 };

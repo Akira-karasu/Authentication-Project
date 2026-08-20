@@ -1,6 +1,7 @@
 import {
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser
 } from "../services/authService.js";
 import { createLog } from "../services/logsService.js";
 
@@ -9,7 +10,7 @@ export const register = async (req, res) => {
         const result = await registerUser(req.body);
 
         res.status(201).json({
-            message: "User registered successfully",
+            message: "User registered successfully, check email for verification",
             data: result
         });
 
@@ -59,5 +60,27 @@ export const login = async (req, res) => {
         res.status(400).json({
             message: error.message
         });
+    }
+};
+
+export const logout = async (req, res) => {
+    try {
+
+        await logoutUser({
+            userId: req.user.id,
+            ipAddress: req.ip,
+            userAgent: req.get("user-agent")
+        });
+
+        res.status(200).json({
+            message: "Logout successful"
+        });
+
+    } catch (error) {
+
+        res.status(400).json({
+            message: error.message
+        });
+
     }
 };
