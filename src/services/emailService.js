@@ -164,3 +164,89 @@ export const sendVerificationEmail = async (email, token) => {
 `
     });
 };
+
+export const sendPasswordReset = async (email, otp) => {
+    await mailTransporter.sendMail({
+        from: `"Authentication Project" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Password Reset OTP",
+        html: `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Password Reset</title>
+            </head>
+
+            <body style="
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+                font-family: Arial, sans-serif;
+            ">
+
+                <div style="
+                    max-width: 500px;
+                    margin: 40px auto;
+                    background-color: #ffffff;
+                    padding: 30px;
+                    border-radius: 10px;
+                    text-align: center;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                ">
+
+                    <h1 style="
+                        color: #333333;
+                        margin-bottom: 10px;
+                    ">
+                        Password Reset
+                    </h1>
+
+                    <p style="
+                        color: #666666;
+                        font-size: 16px;
+                        line-height: 1.5;
+                    ">
+                        We received a request to reset your password.
+                        Use the OTP below to continue.
+                    </p>
+
+                    <div style="
+                        margin: 25px 0;
+                        padding: 15px;
+                        background-color: #f0f0f0;
+                        border-radius: 8px;
+                    ">
+                        <span style="
+                            font-size: 32px;
+                            font-weight: bold;
+                            letter-spacing: 8px;
+                            color: #222222;
+                        ">
+                            ${otp}
+                        </span>
+                    </div>
+
+                    <p style="
+                        color: #777777;
+                        font-size: 14px;
+                    ">
+                        This OTP is valid for a limited time.
+                    </p>
+
+                    <p style="
+                        color: #999999;
+                        font-size: 12px;
+                        margin-top: 25px;
+                    ">
+                        If you did not request a password reset, you can safely ignore this email.
+                    </p>
+
+                </div>
+
+            </body>
+            </html>
+        `
+    });
+};

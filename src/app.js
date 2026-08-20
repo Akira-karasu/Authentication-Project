@@ -3,6 +3,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import verificationRoutes
     from "./routes/verificationRoutes.js";
+import passwordRoute from "./routes/passwordRoute.js"
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(
     "/api/verification",
     verificationRoutes
 );
+app.use("/api/password", passwordRoute)
 
 
 export default app;
