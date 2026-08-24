@@ -1,9 +1,9 @@
-import { passwordReset, verifyReset } from "../services/passwordService.js";
+import { otpPasswordReset, verifyReset, changePassword } from "../services/passwordService.js";
 import { createLog } from "../services/logsService.js";
 
-export const resetPassword = async (req, res) => {
+export const forgotPassword = async (req, res) => {
     try{
-        const result = await passwordReset(req.body.email);
+        const result = await otpPasswordReset(req.body.email);
 
         res.status(200).json({
             message: "If the email is registered, an OTP has been sent."
@@ -19,7 +19,6 @@ export const resetPassword = async (req, res) => {
 export const verifyPasswordReset = async (req, res) => {
 
     try {
-
         const { email, otp } = req.body;
 
         const result = await verifyReset(
@@ -30,6 +29,33 @@ export const verifyPasswordReset = async (req, res) => {
         res.status(200).json({
             message: "OTP verified successfully",
             data: result
+        });
+
+    } catch (error) {
+
+        res.status(400).json({
+            message: error.message
+        });
+
+    }
+};
+
+
+export const changeNewPassword = async (req, res) => {
+    try {
+
+        const {
+            resetToken,
+            newPassword
+        } = req.body;
+
+        await changePassword(
+            resetToken,
+            newPassword
+        );
+
+        res.status(200).json({
+            message: "Password changed successfully"
         });
 
     } catch (error) {

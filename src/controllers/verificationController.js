@@ -10,10 +10,11 @@ export const verifyEmailAccount = async (req, res) => {
 
         const { token } = req.query;
 
-        const user_id = await verifyEmail(token);
+        const user = await verifyEmail(token);
 
         await createLog({
-            userId: user_id,
+            userId: user.user_id,
+            email: user.email,
             action: "VERIFIED",
             description: "User is verified",
             ipAddress: req.ip,

@@ -1,8 +1,7 @@
 import {
     randomBytes,
-    createHash,
-    randomUUID
 } from "crypto";
+import { hashToken } from "../utils/hashtoken.js";
 
 import db from "../config/database.js";
 
@@ -10,9 +9,7 @@ export const createVerificationToken = async (userId) => {
 
     const token = randomBytes(32).toString("hex");
 
-    const tokenHash = createHash("sha256")
-        .update(token)
-        .digest("hex");
+    const tokenHash = hashToken(token)
 
     const expiresAt = new Date(
         Date.now() + 15 * 60 * 1000
@@ -21,14 +18,12 @@ export const createVerificationToken = async (userId) => {
     await db.execute(
         `INSERT INTO verification_tokens
         (
-            id,
             user_id,
             token_hash,
             expires_at
         )
-        VALUES (?, ?, ?, ?)`,
+        VALUES ( ?, ?, ?)`,
         [
-            randomUUID(),
             userId,
             tokenHash,
             expiresAt
@@ -95,9 +90,7 @@ export const resendVerification = async (email) => {
     const token = randomBytes(32).toString("hex");
 
     // Hash token
-    const tokenHash = createHash("sha256")
-        .update(token)
-        .digest("hex");
+    const tokenHash = hashToken(token)
 
     // Token expires in 15 minutes
     const expiresAt = new Date(
@@ -115,14 +108,12 @@ export const resendVerification = async (email) => {
     await db.execute(
         `INSERT INTO verification_tokens
         (
-            id,
             user_id,
             token_hash,
             expires_at
         )
         VALUES (?, ?, ?, ?)`,
         [
-            randomUUID(),
             user.id,
             tokenHash,
             expiresAt
@@ -139,9 +130,7 @@ export const verifyEmail = async (token) => {
         throw new Error("Verification token is required");
     }
 
-    const tokenHash = createHash("sha256")
-        .update(token)
-        .digest("hex");
+    const tokenHash = hashToken(token)
 
     const [tokens] = await db.execute(
         `SELECT
@@ -194,6 +183,6 @@ export const verifyEmail = async (token) => {
         connection.release();
     }
 
-    return user.user_id
+    return user
 
 };

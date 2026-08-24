@@ -5,6 +5,7 @@ import { createLog } from "./logsService.js";
 import db from "../config/database.js";
 import { createVerificationToken, resendVerification } from "./verificationService.js";
 import { sendVerificationEmail } from "./emailService.js";
+import { handleFailedLogin, resetFailedLoginAttempts } from "./loginAttemptService.js";
 
 export const registerUser = async (userData) => {
 
@@ -16,12 +17,25 @@ export const registerUser = async (userData) => {
 
     // Check if user already exists
     const [users] = await db.execute(
-        "SELECT id FROM users WHERE email = ?",
-        [email]
+        `SELECT id, email, username
+         FROM users
+         WHERE email = ?
+            OR username = ?`,
+        [email, username]
     );
 
+
     if (users.length > 0) {
-        throw new Error("Email already exists");
+
+        const existingUser = users[0];
+
+        if (existingUser.email === email) {
+            throw new Error("Email already exists");
+        }
+
+        if (existingUser.username === username) {
+            throw new Error("Username already exists");
+        }
     }
 
     // Generate user ID
@@ -85,26 +99,40 @@ export const loginUser = async (userData) => {
             email,
             password,
             status,
-            role
+            role,
+            locked_until
          FROM users
          WHERE email = ?`,
         [email]
     );
 
-    if (users.length === 0) {
+    const user = users[0];
+
+    if (!user) {
         throw new Error("Invalid email or password");
     }
 
-    const user = users[0];
+    if (user.locked_until && new Date() < new Date(user.locked_until)) {
+        throw new Error(
+            "Account is temporarily locked. Please try again later."
+        );
+    }
+
+    if (user.locked_until && new Date() >= new Date(user.locked_until)) {
+        await db.execute(
+            `UPDATE users
+            SET status = 'active',
+                locked_until = NULL,
+                failed_login_attempts = 0
+            WHERE id = ?`,
+            [user.id]
+        );
+    }
 
     const passwordMatch = await bcrypt.compare(
         password,
         user.password
     );
-
-    if (!passwordMatch) {
-        throw new Error("Invalid email or password");
-    }
 
     if (user.status === "unverified") {
         throw new Error("Please verify your email first");
@@ -121,6 +149,14 @@ export const loginUser = async (userData) => {
     if (user.status === "banned") {
         throw new Error("Account is banned");
     }
+
+    if (!passwordMatch) {
+        await handleFailedLogin(user.id);
+        throw new Error("Invalid email or password");
+    }
+
+
+    await resetFailedLoginAttempts(user.id);
 
     const token = jwt.sign(
         {
@@ -142,12 +178,14 @@ export const loginUser = async (userData) => {
 
 export const logoutUser = async ({
     userId,
+    email,
     ipAddress,
     userAgent
 }) => {
 
     await createLog({
         userId,
+        email,
         action: "LOGOUT",
         description: "User logged out successfully",
         ipAddress,

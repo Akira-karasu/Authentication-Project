@@ -4,8 +4,8 @@ import {
     login,
     logout
 } from "../controllers/authController.js";
-import { validateRegister, validateLogin } from "../middleware/validateAuth.js";
 import { authenticate } from "../middleware/authMiddleware.js";
+import { validateLogin, validateRegister } from "../middleware/validationMiddleware.js";
 
 const router = express.Router();
 

@@ -1,6 +1,7 @@
 import { generateOTP } from "../utils/otp.js";
 import crypto from "crypto";
 import db from "../config/database.js";
+import { hashToken } from "../utils/hashtoken.js";
 
 export const createOTP = async (userId, purpose) => {
 
@@ -43,10 +44,7 @@ export const createOTP = async (userId, purpose) => {
     const otp = generateOTP();
 
     // Hash OTP
-    const otpHash = crypto
-        .createHash("sha256")
-        .update(otp)
-        .digest("hex");
+    const otpHash = hashToken(otp)
 
     // OTP expires in 5 minutes
     const expiresAt = new Date(
@@ -120,10 +118,7 @@ export const verifyOTP = async (userId, purpose, inputOTP) => {
     }
 
     // Hash submitted OTP
-    const otpHash = crypto
-        .createHash("sha256")
-        .update(inputOTP)
-        .digest("hex");
+    const otpHash = hashToken(inputOTP)
 
     // Compare
     if (otpHash !== otp.otp_hash) {

@@ -16,6 +16,7 @@ export const register = async (req, res) => {
 
         await createLog({
             userId: result.id,
+            email: result.email,
             action: "REGISTER",
             description: "User account Registered Successfully",
             ipAddress: req.ip,
@@ -41,6 +42,7 @@ export const login = async (req, res) => {
 
         await createLog({
             userId: result.id,
+            email: result.email,
             action: "LOGIN",
             description: "User account login successfully",
             ipAddress: req.ip,
@@ -51,6 +53,7 @@ export const login = async (req, res) => {
 
         await createLog({
             userId: null,
+            email: req.body.email,
             action: "LOGIN_FAILED",
             description: "Invalid email or password",
             ipAddress: req.ip,
@@ -68,6 +71,7 @@ export const logout = async (req, res) => {
 
         await logoutUser({
             userId: req.user.id,
+            email: req.user.email,
             ipAddress: req.ip,
             userAgent: req.get("user-agent")
         });
