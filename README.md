@@ -114,7 +114,7 @@ DB_PASSWORD=your_mysql_password
 
 # Authentication Secrets
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
-SESSION_SECRET=your_session_secret_key_change_this_in_production
+JWT_EXPIRES_IN=expirartion_value
 
 # Email Configuration (optional - for verification)
 EMAIL_SERVICE=gmail
