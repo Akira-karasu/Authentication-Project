@@ -112,7 +112,7 @@ export const resendVerification = async (email) => {
             token_hash,
             expires_at
         )
-        VALUES (?, ?, ?, ?)`,
+        VALUES (?, ?, ?)`,
         [
             user.id,
             tokenHash,
@@ -146,9 +146,9 @@ export const verifyEmail = async (token) => {
         throw new Error("Invalid verification token");
     }
 
-    const user = tokens[0];
+    const token_log = tokens[0];
 
-    if (new Date() > new Date(user.expires_at)) {
+    if (new Date() > new Date(token_log.expires_at)) {
         throw new Error("Verification token has expired");
     }
 
@@ -162,13 +162,13 @@ export const verifyEmail = async (token) => {
             `UPDATE users
              SET status = 'active'
              WHERE id = ?`,
-            [user.user_id]
+            [token_log.user_id]
         );
 
         await connection.execute(
             `DELETE FROM verification_tokens
              WHERE id = ?`,
-            [user.id]
+            [token_log.id]
         );
 
         await connection.commit();
@@ -183,6 +183,16 @@ export const verifyEmail = async (token) => {
         connection.release();
     }
 
-    return user
+    const [users] = await db.execute(
+        `SELECT id, email FROM users WHERE id = ?`,
+        [token_log.user_id]
+    )
+
+    const user = users[0]
+
+    return {
+        user_id: user.id,
+        email: user.email
+    }
 
 };

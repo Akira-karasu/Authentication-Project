@@ -1,9 +1,9 @@
 import { otpPasswordReset, verifyReset, changePassword } from "../services/passwordService.js";
-import { createLog } from "../services/logsService.js";
+import { sanitizeString } from "../utils/sanitization.js";
 
 export const forgotPassword = async (req, res) => {
     try{
-        const result = await otpPasswordReset(req.body.email);
+        await otpPasswordReset(sanitizeString(req.body.email));
 
         res.status(200).json({
             message: "If the email is registered, an OTP has been sent."

@@ -6,17 +6,27 @@ import { randomBytes } from "crypto";
 import bcrypt from "bcrypt";
 
 export const otpPasswordReset = async (email) => {
+
     const [users] = await db.execute(
         "SELECT id FROM users WHERE email = ?",
         [email]
     );
 
-    const user = users[0].id;
+    if (users.length === 0) {
+        return null;
+    }
 
-    const generated_otp = await createOTP(user, "PASSWORD_RESET");
+    const userId = users[0].id;
 
-    await sendPasswordReset(email, generated_otp)
+    const generatedOtp = await createOTP(
+        userId,
+        "PASSWORD_RESET"
+    );
 
+    await sendPasswordReset(
+        email,
+        generatedOtp
+    );
 };
 
 export const resetPasswordReq = async (id) => {
@@ -65,7 +75,6 @@ export const verifyReset = async (email, otp) => {
 
     const user = users[0];
 
-    // Verify OTP
     await verifyOTP(
         user.id,
         "PASSWORD_RESET",

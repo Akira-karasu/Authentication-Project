@@ -74,8 +74,7 @@ export const registerUser = async (userData) => {
     );
 
     const token_verification = await createVerificationToken(id)
-
-    // make an email callout here for token_verification
+    
     await sendVerificationEmail(email, token_verification)
 
     return {

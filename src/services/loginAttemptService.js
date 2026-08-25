@@ -65,3 +65,48 @@ export const resetFailedLoginAttempts = async (userId) => {
     );
 
 };
+
+export const resetInactiveLoginAttempts = async (userId) => {
+
+    const [users] = await db.execute(
+        `SELECT failed_login_attempts, last_failed_login_at
+         FROM users
+         WHERE id = ?`,
+        [userId]
+    );
+
+    if (users.length === 0) {
+        return;
+    }
+
+    const user = users[0];
+
+    if (
+        user.failed_login_attempts === 0 ||
+        !user.last_failed_login_at
+    ) {
+        return;
+    }
+
+    const lastFailedLogin = new Date(
+        user.last_failed_login_at
+    );
+
+    const now = new Date();
+
+    const elapsed =
+        now.getTime() - lastFailedLogin.getTime();
+
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+
+    if (elapsed >= ONE_DAY) {
+
+        await db.execute(
+            `UPDATE users
+             SET failed_login_attempts = 0,
+                 last_failed_login_at = NULL
+             WHERE id = ?`,
+            [userId]
+        );
+    }
+};

@@ -113,3 +113,39 @@ export const validateLogin = (req, res, next) => {
 
     next();
 };
+
+export const validateForgot = (req, res, next) =>{
+    const { email } = req.body;
+
+    if (!email ){
+        return res.status(400).json({
+            success: false,
+            message: "Email are required"
+        });
+    }
+    next();    
+}
+
+export const validateReset = async (req, res, next) => {
+    const { email, OTP } = req.body;
+
+    if (!email || OTP ){
+        return res.status(400).json({
+            success: false,
+            message: "Email and OTP are required"
+        });
+    }
+    next();
+}
+
+export const validateChangePass = async (req, res, next) => {
+    const {resetToken, newPassword} = req.body;
+
+    if (!resetToken || newPassword){
+        return res.status(400).json({
+            success: false,
+            message: "reset token and new password are required"
+        })
+    }
+    next();
+}
