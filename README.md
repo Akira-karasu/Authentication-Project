@@ -222,7 +222,7 @@ DB_NAME=auth_db
 DB_USER=root
 DB_PASSWORD=
 JWT_SECRET=your_secret_here
-SESSION_SECRET=your_session_secret_here
+JWT_EXPIRES_IN=expiration_value
 ```
 
 ---
