@@ -99,14 +99,12 @@ export const validateLogin = (req, res, next) => {
 
     if (!email || !password) {
         return res.status(400).json({
-            success: false,
             message: "Email and password are required"
         });
     }
 
     if (typeof email !== "string" || typeof password !== "string") {
         return res.status(400).json({
-            success: false,
             message: "Email and password must be valid strings"
         });
     }
@@ -119,7 +117,6 @@ export const validateForgot = (req, res, next) =>{
 
     if (!email ){
         return res.status(400).json({
-            success: false,
             message: "Email are required"
         });
     }
@@ -131,7 +128,6 @@ export const validateReset = async (req, res, next) => {
 
     if (!email || OTP ){
         return res.status(400).json({
-            success: false,
             message: "Email and OTP are required"
         });
     }
@@ -143,9 +139,19 @@ export const validateChangePass = async (req, res, next) => {
 
     if (!resetToken || newPassword){
         return res.status(400).json({
-            success: false,
             message: "reset token and new password are required"
         })
     }
     next();
+}
+
+export const validateVerify = async (req, res, next) => {
+    const { email } = req.body
+
+    if (!email){
+        return res.status(400).json({
+            message: "email is required"
+        })
+    }
+
 }

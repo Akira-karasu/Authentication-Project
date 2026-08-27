@@ -6,6 +6,7 @@ A comprehensive authentication system built with **Node.js** and **Express.js**.
 
 - [Features](#features)
 - [Tech Stack](#tech-stack)
+- [API Endpoints](#api-endpoints)
 - [Project Structure](#project-structure)
 - [Installation & Setup](#installation--setup)
 - [Configuration](#configuration)
@@ -16,10 +17,10 @@ A comprehensive authentication system built with **Node.js** and **Express.js**.
 - **User Authentication**: Secure user login and registration with validation
 - **Email Verification**: Email-based account verification system
 - **Password Management**: Bcrypt-based password hashing and secure password handling
-- **Session Management**: Persistent session handling with JWT tokens
+- **Token Authentication**: JWT-based authentication using Bearer tokens
 - **User Profiles**: Comprehensive user profile management with avatar uploads
 - **Authorization Middleware**: Role-based access control and authentication verification
-- **Input Validation**: Request validation for data integrity and security
+- **Input Validation**: Request validation for registration, login, password recovery, and email verification
 - **Logging Service**: Application logging and activity tracking
 - **Error Handling**: Comprehensive error handling and response management
 - **File Upload**: Profile image upload with organized storage
@@ -28,12 +29,30 @@ A comprehensive authentication system built with **Node.js** and **Express.js**.
 
 - **Runtime**: Node.js (v14+)
 - **Framework**: Express.js 5.2.1
-- **Database**: MySQL 2
+- **Database**: MySQL2 (promise connection pool)
 - **Authentication**: JWT (JSON Web Tokens)
 - **Password Hashing**: Bcrypt
 - **Environment Variables**: Dotenv
 - **Development**: Nodemon
 - **Package Manager**: npm/yarn
+
+## API Endpoints
+
+The API is mounted under `http://localhost:3000` by default.
+
+| Method | Endpoint | Authentication | Purpose |
+|--------|----------|----------------|---------|
+| `POST` | `/api/auth/register` | None | Register a new user |
+| `POST` | `/api/auth/login` | None | Log in and receive a JWT |
+| `POST` | `/api/auth/logout` | Bearer token | Log out the authenticated user |
+| `GET` | `/api/user/me` | Bearer token, `user` role | Get the current user's profile |
+| `GET` | `/api/verification/verify` | None | Verify an email account |
+| `POST` | `/api/verification/resend` | None | Resend verification email; requires `{ "email": "..." }` |
+| `POST` | `/api/password/forgot` | None | Request a password-reset OTP |
+| `POST` | `/api/password/verifyReset` | None | Verify a password-reset OTP |
+| `POST` | `/api/password/resetPassword` | None | Set a new password with a reset token |
+
+Protected requests must include the header `Authorization: Bearer <token>`.
 
 ## Project Structure
 
@@ -46,23 +65,34 @@ AuthenticationProject/
 ├── src/
 │   ├── app.js                     # Express app configuration
 │   ├── config/
-│   │   └── database.js            # MySQL database connection setup
+│   │   ├── database.js            # MySQL connection pool setup
+│   │   └── mail.js                # SMTP mail transporter setup
 │   ├── controllers/
-│   │   ├── authController.js      # Authentication logic (login/register)
+│   │   ├── authController.js      # Registration, login, and logout
+│   │   ├── passwordController.js  # Password recovery and reset
 │   │   ├── userController.js      # User management logic
 │   │   └── verificationController.js # Email verification logic
 │   ├── middleware/
 │   │   ├── authMiddleware.js      # Authentication token verification
-│   │   └── validateAuth.js        # Input validation middleware
+│   │   └── validationMiddleware.js # Request validation middleware
 │   ├── routes/
 │   │   ├── authRoutes.js          # Authentication endpoints
+│   │   ├── passwordRoute.js        # Password recovery endpoints
 │   │   ├── userRoutes.js          # User management endpoints
 │   │   └── verificationRoutes.js  # Email verification endpoints
 │   └── services/
 │       ├── authService.js         # Authentication business logic
+│       ├── emailService.js         # Email delivery logic
+│       ├── loginAttemptService.js  # Login attempt tracking
+│       ├── otpServices.js          # OTP generation and handling
+│       ├── passwordService.js      # Password recovery logic
 │       ├── userService.js         # User management logic
 │       ├── verificationService.js # Email verification logic
 │       └── logsService.js         # Logging utilities
+│   └── utils/
+│       ├── hashtoken.js            # Token hashing utilities
+│       ├── otp.js                  # OTP utilities
+│       └── sanitization.js         # Input sanitization utilities
 └── uploads/
     └── profiles/                  # User profile images storage
 ```
@@ -114,10 +144,10 @@ DB_PASSWORD=your_mysql_password
 
 # Authentication Secrets
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
-SESSION_SECRET=your_session_secret_key_change_this_in_production
 
-# Email Configuration (optional - for verification)
-EMAIL_SERVICE=gmail
+# Email Configuration (SMTP, required for verification and password recovery)
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASSWORD=your_app_password
 ```
@@ -176,9 +206,9 @@ The application uses the following middleware:
 
 | Middleware | File | Purpose |
 |-----------|------|---------|
-| **Authentication** | `authMiddleware.js` | Verifies JWT tokens and session validity |
-| **Validation** | `validateAuth.js` | Validates incoming request data (email, password, etc.) |
-| **Express Built-in** | `app.js` | JSON parsing, URL encoding, CORS handling |
+| **Authentication and authorization** | `authMiddleware.js` | Verifies JWT Bearer tokens and checks user roles |
+| **Validation** | `validationMiddleware.js` | Validates registration, login, password, and verification requests |
+| **Express built-in** | `app.js` | Parses JSON request bodies |
 
 ### File Uploads
 
@@ -222,7 +252,10 @@ DB_NAME=auth_db
 DB_USER=root
 DB_PASSWORD=
 JWT_SECRET=your_secret_here
-SESSION_SECRET=your_session_secret_here
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_USER=your_email@example.com
+EMAIL_PASSWORD=your_app_password
 ```
 
 ---
@@ -235,7 +268,7 @@ SESSION_SECRET=your_session_secret_here
 - **Input Validation**: All user inputs validated before database operations
 - **HTTPS**: Use HTTPS in production
 - **Rate Limiting**: Implement rate limiting on authentication endpoints
-- **CORS**: Configure CORS policy appropriately for your frontend
+- **Email credentials**: Use SMTP credentials or an application-specific password
 
 ---
 
