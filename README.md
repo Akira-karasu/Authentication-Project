@@ -144,6 +144,10 @@ DB_PASSWORD=your_mysql_password
 
 # Authentication Secrets
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
+<<<<<<< HEAD
+=======
+JWT_EXPIRES_IN=expirartion_value
+>>>>>>> cb00a2f6445f3bfa569dc8d42ec962b5ec71b5e6
 
 # Email Configuration (SMTP, required for verification and password recovery)
 EMAIL_HOST=smtp.example.com
@@ -252,10 +256,14 @@ DB_NAME=auth_db
 DB_USER=root
 DB_PASSWORD=
 JWT_SECRET=your_secret_here
+<<<<<<< HEAD
 EMAIL_HOST=smtp.example.com
 EMAIL_PORT=587
 EMAIL_USER=your_email@example.com
 EMAIL_PASSWORD=your_app_password
+=======
+JWT_EXPIRES_IN=expiration_value
+>>>>>>> cb00a2f6445f3bfa569dc8d42ec962b5ec71b5e6
 ```
 
 ---
