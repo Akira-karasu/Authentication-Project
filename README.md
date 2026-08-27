@@ -256,14 +256,7 @@ DB_NAME=auth_db
 DB_USER=root
 DB_PASSWORD=
 JWT_SECRET=your_secret_here
-<<<<<<< HEAD
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@example.com
-EMAIL_PASSWORD=your_app_password
-=======
 JWT_EXPIRES_IN=expiration_value
->>>>>>> cb00a2f6445f3bfa569dc8d42ec962b5ec71b5e6
 ```
 
 ---
